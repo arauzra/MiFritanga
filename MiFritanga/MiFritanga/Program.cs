@@ -1,6 +1,7 @@
 // ============================================
 // MiFritanga - Juego Tycoon
-// Program.cs — Archivo principal
+// MiFritanga_Miguel.cs — Parte de Miguel
+// CONTENIDO + UI (mensajes, menús, display)
 // ============================================
 
 // ============================================
@@ -14,6 +15,20 @@ string[] nombresPlatillos = {
     "Maduro frito", "Enchilada", "Chancho con yuca"
 };
 
+// Descripción de cada platillo (mismo orden que nombresPlatillos)
+string[] descripcionesPlatillos = {
+    "Yuca cocida con chicharrón y ensalada de repollo.",
+    "Tamal de maíz relleno de carne y arroz, envuelto en hoja de plátano.",
+    "Tortilla enrollada con queso seco y crema.",
+    "Combinación de carnes asadas con arroz, frijoles y tajadas.",
+    "Plátano maduro frito con queso seco rallado encima.",
+    "Caldo abundante de res con verduras y yuca.",
+    "Tortilla de maíz tierno con cuajada fresca.",
+    "Plátano maduro frito, dulce y suavecito.",
+    "Tortilla frita rellena de carne molida y queso.",
+    "Chancho cocinado con yuca y curtido de cebolla."
+};
+
 double[] preciosPlatillos = {
     60.0, 50.0, 30.0, 80.0, 40.0,
     90.0, 35.0, 25.0, 45.0, 70.0
@@ -22,6 +37,11 @@ double[] preciosPlatillos = {
 int[] costoIngredientes = {
     3, 4, 2, 5, 2, 6, 2, 1, 3, 5
 };
+
+// ============================================
+// EVENTOS — Miguel
+// Cada evento positivo tiene su efecto asociado
+// ============================================
 
 string[] eventosPositivos = {
     "¡Un grupo de turistas visitó tu fritanga! Más clientes hoy.",
@@ -39,307 +59,273 @@ string[] eventosNegativos = {
     "Se subió el precio de los ingredientes esta semana."
 };
 
-// ============================================
-// ESTADO GLOBAL DEL JUEGO — Rafael
-// ============================================
-
-int dia = 1;
-double dinero = 500.0;
-int reputacion = 50;
-int mesas = 3;
-int empleados = 2;
-int ingredientes = 100;
-bool juegoActivo = true;
-int diasTotales = 30;
-Random rng = new Random();
-string rutaHistorial = "historial.csv";
+// Mensajes de error reutilizables — Miguel
+string MSG_SIN_DINERO = "No tenés suficiente dinero para eso.";
+string MSG_SIN_INGREDIENTES = "¡Se acabaron los ingredientes! Comprá más en la tienda.";
+string MSG_OPCION_INVALIDA = "Opción no válida. Intentá de nuevo.";
 
 // ============================================
-// BUCLE PRINCIPAL — Rafael
-// ============================================
-
-MostrarBienvenida();
-
-while (juegoActivo && dia <= diasTotales)
-{
-    MostrarEstado();
-    MostrarMenuPrincipal();
-
-    string opcion = Console.ReadLine();
-
-    switch (opcion)
-    {
-        case "1":
-            EjecutarDia();
-            dia++;
-            break;
-        case "2":
-            AbrirTienda();
-            break;
-        case "3":
-            MostrarHistorial();
-            break;
-        case "4":
-            juegoActivo = false;
-            break;
-        default:
-            Console.WriteLine("Opción no válida. Intentá de nuevo.");
-            break;
-    }
-
-    if (VerificarDerrota())
-        juegoActivo = false;
-}
-
-MostrarResultadoFinal();
-
-// ============================================
-// UI — Rafael
+// UI — Miguel
 // Mensajes, menús y display en consola
 // ============================================
 
 void MostrarBienvenida()
 {
     Console.Clear();
-    Console.WriteLine("╔══════════════════════════════════════╗");
-    Console.WriteLine("║         BIENVENIDO A MIFRITANGA      ║");
-    Console.WriteLine("║   ¡Administrá tu propia fritanga!    ║");
-    Console.WriteLine("╚══════════════════════════════════════╝");
-    Console.WriteLine("\nPresioná ENTER para comenzar...");
+    Console.ForegroundColor = ConsoleColor.Yellow;
+    Console.WriteLine("╔══════════════════════════════════════════╗");
+    Console.WriteLine("║                                          ║");
+    Console.WriteLine("║       🍖  BIENVENIDO A MIFRITANGA  🍖   ║");
+    Console.WriteLine("║                                          ║");
+    Console.WriteLine("║   ¡Administrá tu propia fritanga         ║");
+    Console.WriteLine("║        nicaragüense y sobreviví          ║");
+    Console.WriteLine("║            30 días de negocio!           ║");
+    Console.WriteLine("║                                          ║");
+    Console.WriteLine("╚══════════════════════════════════════════╝");
+    Console.ResetColor();
+
+    Console.WriteLine();
+    Console.WriteLine("  Tenés C$500 de capital inicial.");
+    Console.WriteLine("  Vendé platillos, gestioná tus ingredientes");
+    Console.WriteLine("  y mantené tu reputación en alto.");
+    Console.WriteLine();
+    Console.ForegroundColor = ConsoleColor.Cyan;
+    Console.WriteLine("  Presioná ENTER para comenzar...");
+    Console.ResetColor();
     Console.ReadLine();
 }
 
 void MostrarMenuPrincipal()
 {
-    Console.WriteLine("\n¿Qué hacés hoy?");
-    Console.WriteLine("[1] Abrir la fritanga (iniciar el día)");
-    Console.WriteLine("[2] Administrar (comprar, contratar, expandir)");
-    Console.WriteLine("[3] Ver historial y progreso");
-    Console.WriteLine("[4] Salir");
-    Console.Write("\nOpción: ");
+    Console.WriteLine();
+    Console.ForegroundColor = ConsoleColor.White;
+    Console.WriteLine("  ¿Qué hacés hoy?");
+    Console.ResetColor();
+    Console.WriteLine("  [1] Abrir la fritanga  (iniciar el día)");
+    Console.WriteLine("  [2] Administrar        (comprar, contratar, expandir)");
+    Console.WriteLine("  [3] Ver historial y progreso");
+    Console.WriteLine("  [4] Salir del juego");
+    Console.Write("\n  Opción: ");
 }
 
 void MostrarEstado()
 {
-    Console.WriteLine("\n══════════════════════════════════════");
-    Console.WriteLine($"  Día: {dia}/{diasTotales}");
-    Console.WriteLine($"  Dinero:       C${dinero:F2}");
-    Console.WriteLine($"  Reputación:   {reputacion}/100");
-    Console.WriteLine($"  Mesas:        {mesas}");
-    Console.WriteLine($"  Empleados:    {empleados}");
-    Console.WriteLine($"  Ingredientes: {ingredientes} unidades");
-    Console.WriteLine("══════════════════════════════════════");
+    Console.WriteLine();
+    Console.ForegroundColor = ConsoleColor.Cyan;
+    Console.WriteLine("══════════════════════════════════════════");
+    Console.ResetColor();
+    Console.WriteLine($"  📅  Día:          {dia} / {diasTotales}");
+    Console.WriteLine($"  💵  Dinero:        C${dinero:F2}");
+
+    // Barra visual de reputación
+    int barraLlena = reputacion / 10;
+    string barra = "[" + new string('█', barraLlena) + new string('░', 10 - barraLlena) + "]";
+    Console.Write($"  ⭐  Reputación:    {barra} {reputacion}/100");
+
+    if (reputacion >= 75)
+    {
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine("  ← ¡Excelente!");
+    }
+    else if (reputacion >= 40)
+    {
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.WriteLine("  ← Regular");
+    }
+    else
+    {
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine("  ← ¡En peligro!");
+    }
+    Console.ResetColor();
+
+    Console.WriteLine($"  🪑  Mesas:         {mesas}");
+    Console.WriteLine($"  👤  Empleados:     {empleados}");
+
+    // Advertencia si hay pocos ingredientes
+    Console.Write($"  🧺  Ingredientes:  {ingredientes} unidades");
+    if (ingredientes < 20)
+    {
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.Write("  ⚠️  ¡Pocos ingredientes!");
+        Console.ResetColor();
+    }
+    Console.WriteLine();
+
+    Console.ForegroundColor = ConsoleColor.Cyan;
+    Console.WriteLine("══════════════════════════════════════════");
+    Console.ResetColor();
 }
 
 void MostrarResultadoDia(double ganancias, double gastos, int clientesAtendidos, int clientesPerdidos)
 {
-    Console.WriteLine("\n--- Resumen del día ---");
-    Console.WriteLine($"Clientes atendidos: {clientesAtendidos}");
-    Console.WriteLine($"Clientes perdidos:  {clientesPerdidos}");
-    Console.WriteLine($"Ganancias:  C${ganancias:F2}");
-    Console.WriteLine($"Gastos:     C${gastos:F2}");
-    Console.WriteLine($"Balance:    C${ganancias - gastos:F2}");
-    Console.WriteLine("------------------------");
-    Console.WriteLine("Presioná ENTER para continuar...");
+    Console.WriteLine();
+    Console.ForegroundColor = ConsoleColor.White;
+    Console.WriteLine("  ┌─────────────────────────────────────┐");
+    Console.WriteLine("  │        RESUMEN DEL DÍA              │");
+    Console.WriteLine("  └─────────────────────────────────────┘");
+    Console.ResetColor();
+
+    Console.WriteLine($"  👥  Clientes atendidos:  {clientesAtendidos}");
+
+    if (clientesPerdidos > 0)
+    {
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine($"  😤  Clientes perdidos:   {clientesPerdidos}  ← ¡Se fueron sin comer!");
+        Console.ResetColor();
+    }
+    else
+    {
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine($"  😤  Clientes perdidos:   0  ← ¡Perfecto!");
+        Console.ResetColor();
+    }
+
+    Console.WriteLine($"  📈  Ganancias:           C${ganancias:F2}");
+    Console.WriteLine($"  📉  Gastos:              C${gastos:F2}");
+
+    double balance = ganancias - gastos;
+    Console.Write("  💰  Balance del día:     ");
+    if (balance >= 0)
+    {
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine($"C${balance:F2}  ✔");
+    }
+    else
+    {
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine($"C${balance:F2}  ✘");
+    }
+    Console.ResetColor();
+
+    Console.WriteLine("  ─────────────────────────────────────");
+    Console.ForegroundColor = ConsoleColor.Cyan;
+    Console.WriteLine("  Presioná ENTER para continuar...");
+    Console.ResetColor();
     Console.ReadLine();
 }
 
 void MostrarEvento(string descripcion)
 {
-    Console.WriteLine($"\n*** EVENTO: {descripcion} ***");
+    Console.WriteLine();
+    Console.ForegroundColor = ConsoleColor.Magenta;
+    Console.WriteLine("  ╔══════════════════════════════════════╗");
+    Console.WriteLine("  ║            ⚡ EVENTO ⚡               ║");
+    Console.WriteLine("  ╠══════════════════════════════════════╣");
+    // Centrar texto del evento (max 38 chars visibles)
+    string texto = descripcion.Length > 38 ? descripcion.Substring(0, 38) : descripcion;
+    Console.WriteLine($"  ║  {texto.PadRight(38)}║");
+    Console.WriteLine("  ╚══════════════════════════════════════╝");
+    Console.ResetColor();
 }
 
 void MostrarResultadoFinal()
 {
     Console.Clear();
+
     if (dia > diasTotales)
     {
-        Console.WriteLine("╔══════════════════════════════════════╗");
-        Console.WriteLine("║        ¡SOBREVIVISTE 30 DÍAS!        ║");
-        Console.WriteLine("║       Tu fritanga es un éxito!       ║");
-        Console.WriteLine("╚══════════════════════════════════════╝");
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine("╔══════════════════════════════════════════╗");
+        Console.WriteLine("║                                          ║");
+        Console.WriteLine("║   🏆  ¡SOBREVIVISTE LOS 30 DÍAS!  🏆    ║");
+        Console.WriteLine("║       ¡Tu fritanga es un éxito!          ║");
+        Console.WriteLine("║                                          ║");
+        Console.WriteLine("╚══════════════════════════════════════════╝");
     }
     else
     {
-        Console.WriteLine("╔══════════════════════════════════════╗");
-        Console.WriteLine("║          CERRASTE LA FRITANGA        ║");
-        Console.WriteLine("║        Se te acabó el dinero...      ║");
-        Console.WriteLine("╚══════════════════════════════════════╝");
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine("╔══════════════════════════════════════════╗");
+        Console.WriteLine("║                                          ║");
+        Console.WriteLine("║   😢  CERRASTE LA FRITANGA  😢           ║");
+        Console.WriteLine("║       Se te acabó el dinero...           ║");
+        Console.WriteLine("║                                          ║");
+        Console.WriteLine("╚══════════════════════════════════════════╝");
     }
-    Console.WriteLine($"\nDinero final:       C${dinero:F2}");
-    Console.WriteLine($"Reputación final:   {reputacion}/100");
-    Console.WriteLine($"Días sobrevividos:  {dia - 1}");
-    Console.WriteLine("\nPresioná ENTER para salir...");
+    Console.ResetColor();
+
+    Console.WriteLine();
+    Console.WriteLine($"  💵  Dinero final:        C${dinero:F2}");
+    Console.WriteLine($"  ⭐  Reputación final:    {reputacion}/100");
+    Console.WriteLine($"  📅  Días sobrevividos:   {dia - 1}");
+    Console.WriteLine();
+
+    // Calificación final según reputación
+    Console.Write("  🏅  Calificación:  ");
+    if (reputacion >= 80 && dia > diasTotales)
+    {
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.WriteLine("★★★  FRITANGUERA LEGENDARIA");
+    }
+    else if (reputacion >= 60)
+    {
+        Console.ForegroundColor = ConsoleColor.Cyan;
+        Console.WriteLine("★★☆  Fritanguera Reconocida");
+    }
+    else if (reputacion >= 30)
+    {
+        Console.ForegroundColor = ConsoleColor.White;
+        Console.WriteLine("★☆☆  Fritanguera del Barrio");
+    }
+    else
+    {
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine("☆☆☆  Fritanguera Principiante");
+    }
+    Console.ResetColor();
+
+    Console.WriteLine();
+    Console.ForegroundColor = ConsoleColor.Cyan;
+    Console.WriteLine("  Presioná ENTER para salir...");
+    Console.ResetColor();
     Console.ReadLine();
 }
 
 // ============================================
-// JUEGO — Carlos
-// Lógica principal: clientes, pedidos, eventos
+// FUNCIÓN AUXILIAR — Miguel
+// Muestra el menú de un platillo con su descripción y precio
+// Útil para cuando Carlos procese pedidos del día
 // ============================================
-
-void EjecutarDia()
+void MostrarMenuPlatillos()
 {
-    // TODO: Implementar lógica del día
-    // 1. Llamar GenerarClientes()
-    // 2. Llamar ProcesarPedidos() con la cantidad de clientes
-    // 3. Llamar GenerarEvento()
-    // 4. Calcular gastos del día (salarios de empleados)
-    // 5. Actualizar dinero
-    // 6. Llamar ActualizarReputacion()
-    // 7. Llamar GuardarDia()
-    // 8. Llamar MostrarResultadoDia()
+    Console.WriteLine();
+    Console.ForegroundColor = ConsoleColor.Yellow;
+    Console.WriteLine("  ┌──────────────────────────────────────────────┐");
+    Console.WriteLine("  │              MENÚ DE HOY 🍽️                  │");
+    Console.WriteLine("  └──────────────────────────────────────────────┘");
+    Console.ResetColor();
 
-    Console.WriteLine("[EjecutarDia] pendiente de implementar.");
-    Console.ReadLine();
-}
-
-void AbrirTienda()
-{
-    // TODO: Mostrar submenú:
-    // [1] Comprar ingredientes → ComprarIngredientes()
-    // [2] Contratar empleado  → ContratarEmpleado()
-    // [3] Agregar mesa        → AgregarMesa()
-    // [4] Volver
-
-    Console.WriteLine("[AbrirTienda] pendiente de implementar.");
-    Console.ReadLine();
-}
-
-int GenerarClientes()
-{
-    // TODO: Calcular clientes según reputacion, mesas y factor aleatorio
-    // Fórmula sugerida: base = mesas * empleados
-    //                   bonus = reputacion / 20
-    //                   aleatorio = rng.Next(-2, 3)
-    //                   return base + bonus + aleatorio
-
-    Console.WriteLine("[GenerarClientes] pendiente de implementar.");
-    return 0;
-}
-
-double ProcesarPedidos(int cantidadClientes)
-{
-    // TODO: Por cada cliente:
-    //   - Elegir platillo aleatorio: rng.Next(0, nombresPlatillos.Length)
-    //   - Si hay ingredientes suficientes: sumar precio, restar costoIngredientes
-    //   - Si no hay: clientesPerdidos++, bajar reputacion
-    // Retornar total de ganancias
-
-    Console.WriteLine("[ProcesarPedidos] pendiente de implementar.");
-    return 0.0;
-}
-
-void ActualizarReputacion(int clientesAtendidos, int clientesPerdidos)
-{
-    // TODO: Si clientesAtendidos > clientesPerdidos: reputacion += 2
-    //       Si clientesPerdidos > clientesAtendidos: reputacion -= 3
-    //       Mantener entre 0 y 100
-
-    Console.WriteLine("[ActualizarReputacion] pendiente de implementar.");
-}
-
-void GenerarEvento()
-{
-    // TODO: Si rng.Next(0, 100) < 30 (30% de probabilidad):
-    //   - Si rng.Next(0,2) == 0: evento positivo
-    //     → elegir de eventosPositivos, aplicar efecto positivo
-    //   - Si no: evento negativo
-    //     → elegir de eventosNegativos, aplicar efecto negativo
-    //   - Llamar MostrarEvento() con la descripción
-
-    Console.WriteLine("[GenerarEvento] pendiente de implementar.");
-}
-
-bool VerificarDerrota()
-{
-    // TODO: Si dinero <= 0, mostrar mensaje y retornar true
-    //       Si no, retornar false
-
-    return false;
-}
-
-void ComprarIngredientes()
-{
-    // TODO: Mostrar precio por unidad (ej: C$5 cada una)
-    //       Preguntar cuántas unidades quiere comprar
-    //       Verificar que tenga dinero: dinero >= cantidad * 5
-    //       Si tiene: dinero -= cantidad * 5, ingredientes += cantidad
-    //       Si no: mostrar mensaje de error
-
-    Console.WriteLine("[ComprarIngredientes] pendiente de implementar.");
-    Console.ReadLine();
-}
-
-void ContratarEmpleado()
-{
-    // TODO: Costo de contratación: C$100
-    //       Verificar que dinero >= 100
-    //       Si tiene: dinero -= 100, empleados++
-    //       Si no: mostrar mensaje de error
-
-    Console.WriteLine("[ContratarEmpleado] pendiente de implementar.");
-    Console.ReadLine();
-}
-
-void AgregarMesa()
-{
-    // TODO: Costo de mesa: C$150
-    //       Verificar que dinero >= 150
-    //       Si tiene: dinero -= 150, mesas++
-    //       Si no: mostrar mensaje de error
-
-    Console.WriteLine("[AgregarMesa] pendiente de implementar.");
-    Console.ReadLine();
+    for (int i = 0; i < nombresPlatillos.Length; i++)
+    {
+        Console.WriteLine($"  [{i + 1,2}] {nombresPlatillos[i],-22} C${preciosPlatillos[i],5:F2}");
+        Console.ForegroundColor = ConsoleColor.DarkGray;
+        Console.WriteLine($"       {descripcionesPlatillos[i]}");
+        Console.ResetColor();
+    }
+    Console.WriteLine();
 }
 
 // ============================================
-// DATOS — Mario
-// Guardado, carga y estadísticas
+// MENSAJES DE ERROR Y NOTIFICACIÓN 
 // ============================================
-
-void GuardarDia(int numeroDia, double ganancias, double gastos, int clientesAtendidos, int clientesPerdidos)
+void MostrarError(string mensaje)
 {
-    // TODO: Crear línea CSV:
-    //       numeroDia,ganancias,gastos,clientesAtendidos,clientesPerdidos,reputacion
-    //       Agregar al archivo con File.AppendAllText(rutaHistorial, linea + "\n")
-
-    Console.WriteLine("[GuardarDia] pendiente de implementar.");
+    Console.ForegroundColor = ConsoleColor.Red;
+    Console.WriteLine($"\n  ✘  {mensaje}");
+    Console.ResetColor();
 }
 
-void MostrarHistorial()
+void MostrarExito(string mensaje)
 {
-    // TODO: Si !File.Exists(rutaHistorial): mostrar "Sin historial aún"
-    //       Si existe: leer con File.ReadAllLines(rutaHistorial)
-    //       Para cada línea: Split(',') y mostrar los datos formateados
-
-    Console.WriteLine("[MostrarHistorial] pendiente de implementar.");
-    Console.ReadLine();
+    Console.ForegroundColor = ConsoleColor.Green;
+    Console.WriteLine($"\n  ✔  {mensaje}");
+    Console.ResetColor();
 }
 
-double ObtenerMejorDia()
+void MostrarNotificacion(string mensaje)
 {
-    // TODO: Leer historial, recorrer con ciclo
-    //       Guardar la mayor ganancia encontrada
-    //       Retornar ese valor
-
-    return 0.0;
-}
-
-double ObtenerPromedioGanancias()
-{
-    // TODO: Leer historial, sumar todas las ganancias
-    //       Dividir entre cantidad de días jugados
-    //       Retornar el promedio
-
-    return 0.0;
-}
-
-void MostrarProgreso()
-{
-    // TODO: Llamar ObtenerMejorDia() y ObtenerPromedioGanancias()
-    //       Mostrar mejor día, promedio, y si el jugador está mejorando
-
-    Console.WriteLine("[MostrarProgreso] pendiente de implementar.");
-    Console.ReadLine();
+    Console.ForegroundColor = ConsoleColor.Yellow;
+    Console.WriteLine($"\n  ℹ  {mensaje}");
+    Console.ResetColor();
 }
