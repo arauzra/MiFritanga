@@ -298,48 +298,158 @@ void AgregarMesa()
 // Guardado, carga y estadísticas
 // ============================================
 
-void GuardarDia(int numeroDia, double ganancias, double gastos, int clientesAtendidos, int clientesPerdidos)
-{
     // TODO: Crear línea CSV:
     //       numeroDia,ganancias,gastos,clientesAtendidos,clientesPerdidos,reputacion
     //       Agregar al archivo con File.AppendAllText(rutaHistorial, linea + "\n")
 
-    Console.WriteLine("[GuardarDia] pendiente de implementar.");
-}
 
-void MostrarHistorial()
-{
     // TODO: Si !File.Exists(rutaHistorial): mostrar "Sin historial aún"
     //       Si existe: leer con File.ReadAllLines(rutaHistorial)
     //       Para cada línea: Split(',') y mostrar los datos formateados
 
-    Console.WriteLine("[MostrarHistorial] pendiente de implementar.");
+    
+    // TODO: Leer historial, recorrer con ciclo
+    //       Guardar la mayor ganancia encontrada
+    //       Retornar ese valor
+
+
+    // TODO: Leer historial, sumar todas las ganancias
+    //       Dividir entre cantidad de días jugados
+    //       Retornar el promedio
+
+
+    // TODO: Llamar ObtenerMejorDia() y ObtenerPromedioGanancias()
+    //       Mostrar mejor día, promedio, y si el jugador está mejorando
+
+
+
+void GuardarDia(int numeroDia, double ganancias, double gastos, int clientesAtendidos, int clientesPerdidos)
+{
+    try
+    {
+        StreamWriter archivo = new StreamWriter(rutaHistorial, true); // true = append
+        archivo.WriteLine($"{numeroDia},{ganancias},{gastos},{clientesAtendidos},{clientesPerdidos},{reputacion}");
+        archivo.Close();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error al guardar el día: {ex.Message}");
+    }
+}
+
+void MostrarHistorial()
+{
+    if (!File.Exists(rutaHistorial))
+    {
+        Console.WriteLine("\nSin historial aún, avanzá en el juego!.");
+        Console.ReadLine();
+        return;
+    }
+
+    try
+    {
+        string[] lineas = File.ReadAllLines(rutaHistorial);
+
+        Console.WriteLine("\n===== HISTORIAL =====");
+
+        for (int i = 0; i < lineas.Length; i++)
+        {
+            string[] datos = lineas[i].Split(',');
+
+            int numeroDia = int.Parse(datos[0]);
+            double ganancias = double.Parse(datos[1]);
+            double gastos = double.Parse(datos[2]);
+            int clientesAtendidos = int.Parse(datos[3]);
+            int clientesPerdidos = int.Parse(datos[4]);
+            int reputacionDia = int.Parse(datos[5]);
+
+            Console.WriteLine($"Día {numeroDia}: Ganancias C${ganancias} | Gastos C${gastos} | Clientes Atendidos {clientesAtendidos} | Clientes Perdidos {clientesPerdidos} | Reputación {reputacionDia}");
+        }
+
+        Console.WriteLine("======================");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error al leer el historial: {ex.Message}");
+    }
+
     Console.ReadLine();
 }
 
 double ObtenerMejorDia()
 {
-    // TODO: Leer historial, recorrer con ciclo
-    //       Guardar la mayor ganancia encontrada
-    //       Retornar ese valor
+    if (!File.Exists(rutaHistorial))
+        return 0.0;
 
-    return 0.0;
+    double mejorGanancia = 0.0;
+
+    try
+    {
+        string[] lineas = File.ReadAllLines(rutaHistorial);
+
+        for (int i = 0; i < lineas.Length; i++)
+        {
+            string[] datos = lineas[i].Split(',');
+            double ganancias = double.Parse(datos[1]);
+
+            if (ganancias > mejorGanancia)
+                mejorGanancia = ganancias;
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error al calcular el mejor día: {ex.Message}");
+    }
+
+    return mejorGanancia;
 }
 
 double ObtenerPromedioGanancias()
 {
-    // TODO: Leer historial, sumar todas las ganancias
-    //       Dividir entre cantidad de días jugados
-    //       Retornar el promedio
+    if (!File.Exists(rutaHistorial))
+        return 0.0;
 
-    return 0.0;
+    double sumaGanancias = 0.0;
+    int diasJugados = 0;
+
+    try
+    {
+        string[] lineas = File.ReadAllLines(rutaHistorial);
+
+        for (int i = 0; i < lineas.Length; i++)
+        {
+            string[] datos = lineas[i].Split(',');
+            sumaGanancias = sumaGanancias + double.Parse(datos[1]);
+            diasJugados = diasJugados + 1;
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error al calcular el promedio: {ex.Message}");
+    }
+
+    if (diasJugados == 0)
+        return 0.0;
+
+    return sumaGanancias / diasJugados;
 }
 
 void MostrarProgreso()
 {
-    // TODO: Llamar ObtenerMejorDia() y ObtenerPromedioGanancias()
-    //       Mostrar mejor día, promedio, y si el jugador está mejorando
+    double mejorDia = ObtenerMejorDia();
+    double promedio = ObtenerPromedioGanancias();
 
-    Console.WriteLine("[MostrarProgreso] pendiente de implementar.");
+    Console.WriteLine("\n--- Progreso ---");
+    Console.WriteLine($"Mejor día: C${mejorDia}");
+    Console.WriteLine($"Promedio de ganancias: C${promedio}");
+
+    if (mejorDia > promedio)
+        Console.WriteLine("Vas mejorando, ¡seguí así!");
+    else
+        Console.WriteLine("Podés mejorar tus ganancias diarias, seguí intentando.");
+
+    Console.WriteLine("------------------------");
     Console.ReadLine();
 }
+
+
