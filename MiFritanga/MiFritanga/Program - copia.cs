@@ -1,4 +1,4 @@
-// ============================================
+x// ============================================
 // MiFritanga - Juego Tycoon
 // Program.cs — Archivo principal
 // ============================================
@@ -180,116 +180,320 @@ void MostrarResultadoFinal()
 
 void EjecutarDia()
 {
-    // TODO: Implementar lógica del día
     // 1. Llamar GenerarClientes()
+    int clientesGenerados = GenerarClientes();
+
     // 2. Llamar ProcesarPedidos() con la cantidad de clientes
+    double gananciasDia = ProcesarPedidos(clientesGenerados);
+
+    // Variables temporales (ya que ProcesarPedidos solo retorna el dinero)
+    int clientesAtendidos = clientesGenerados;
+    int clientesPerdidos = 0;
+
     // 3. Llamar GenerarEvento()
+    GenerarEvento();
+
     // 4. Calcular gastos del día (salarios de empleados)
+    // Asumiremos un salario de C$50 al día por cada empleado
+    double gastosDia = empleados * 50.0;
+
     // 5. Actualizar dinero
+    dinero += (gananciasDia - gastosDia);
+
     // 6. Llamar ActualizarReputacion()
+    ActualizarReputacion(clientesAtendidos, clientesPerdidos);
+
     // 7. Llamar GuardarDia()
+    GuardarDia(dia, gananciasDia, gastosDia, clientesAtendidos, clientesPerdidos);
+
     // 8. Llamar MostrarResultadoDia()
-
-    Console.WriteLine("[EjecutarDia] pendiente de implementar.");
-    Console.ReadLine();
+    MostrarResultadoDia(gananciasDia, gastosDia, clientesAtendidos, clientesPerdidos);
 }
-
 void AbrirTienda()
 {
-    // TODO: Mostrar submenú:
-    // [1] Comprar ingredientes → ComprarIngredientes()
-    // [2] Contratar empleado  → ContratarEmpleado()
-    // [3] Agregar mesa        → AgregarMesa()
-    // [4] Volver
+    bool enTienda = true;
 
-    Console.WriteLine("[AbrirTienda] pendiente de implementar.");
-    Console.ReadLine();
+    while (enTienda)
+    {
+        Console.Clear();
+        Console.WriteLine("╔══════════════════════════════════════╗");
+        Console.WriteLine("║         ADMINISTRAR FRITANGA         ║");
+        Console.WriteLine("╚══════════════════════════════════════╝");
+        // Mostramos el dinero actual para ayudar al jugador a decidir
+        Console.WriteLine($"Dinero disponible: C${dinero:F2}\n");
+
+        Console.WriteLine("[1] Comprar ingredientes");
+        Console.WriteLine("[2] Contratar empleado");
+        Console.WriteLine("[3] Agregar mesa");
+        Console.WriteLine("[4] Volver al menú principal");
+        Console.Write("\nElegí una opción: ");
+
+        string opcion = Console.ReadLine();
+
+        switch (opcion)
+        {
+            case "1":
+                ComprarIngredientes();
+                break;
+            case "2":
+                ContratarEmpleado();
+                break;
+            case "3":
+                AgregarMesa();
+                break;
+            case "4":
+                enTienda = false; // Rompe el bucle y regresa al menú principal
+                break;
+            default:
+                Console.WriteLine("Opción no válida. Presioná ENTER para intentar de nuevo.");
+                Console.ReadLine();
+                break;
+        }
+    }
 }
 
 int GenerarClientes()
 {
-    // TODO: Calcular clientes según reputacion, mesas y factor aleatorio
-    // Fórmula sugerida: base = mesas * empleados
-    //                   bonus = reputacion / 20
-    //                   aleatorio = rng.Next(-2, 3)
-    //                   return base + bonus + aleatorio
+    // Calculamos la base de clientes según la capacidad (mesas y empleados)
+    int clientesBase = mesas * empleados;
 
-    Console.WriteLine("[GenerarClientes] pendiente de implementar.");
-    return 0;
+    // Un bonus por buena reputación
+    int bonus = reputacion / 20;
+
+    // El factor aleatorio (suerte del día). rng.Next(-2, 3) da un número entre -2 y 2.
+    int aleatorio = rng.Next(-2, 3);
+
+    // Sumamos todo
+    int totalClientes = clientesBase + bonus + aleatorio;
+
+    // Evitamos que por mala suerte tengamos clientes negativos
+    if (totalClientes < 0)
+    {
+        totalClientes = 0;
+    }
+
+    return totalClientes;
 }
 
 double ProcesarPedidos(int cantidadClientes)
 {
-    // TODO: Por cada cliente:
-    //   - Elegir platillo aleatorio: rng.Next(0, nombresPlatillos.Length)
-    //   - Si hay ingredientes suficientes: sumar precio, restar costoIngredientes
-    //   - Si no hay: clientesPerdidos++, bajar reputacion
-    // Retornar total de ganancias
+    double gananciasDia = 0.0;
+    int clientesPerdidos = 0;
 
-    Console.WriteLine("[ProcesarPedidos] pendiente de implementar.");
-    return 0.0;
+    for (int i = 0; i < cantidadClientes; i++)
+    {
+        // 1. Elegir un platillo aleatorio
+        int indicePlatillo = rng.Next(0, nombresPlatillos.Length);
+        int costo = costoIngredientes[indicePlatillo];
+
+        // 2. Verificar si hay ingredientes suficientes
+        if (ingredientes >= costo)
+        {
+            // Atendemos al cliente
+            ingredientes -= costo;
+            gananciasDia += preciosPlatillos[indicePlatillo];
+        }
+        else
+        {
+            // No hay ingredientes: cliente perdido
+            clientesPerdidos++;
+        }
+    }
+
+    // Si hubo clientes perdidos, avisamos en consola (esto es útil para debuguear)
+    if (clientesPerdidos > 0)
+    {
+        Console.WriteLine($"[!] Atención: {clientesPerdidos} clientes se fueron porque no había ingredientes.");
+    }
+
+    return gananciasDia;
 }
 
-void ActualizarReputacion(int clientesAtendidos, int clientesPerdidos)
+vvoid ActualizarReputacion(int clientesAtendidos, int clientesPerdidos)
 {
-    // TODO: Si clientesAtendidos > clientesPerdidos: reputacion += 2
-    //       Si clientesPerdidos > clientesAtendidos: reputacion -= 3
-    //       Mantener entre 0 y 100
+    // Evaluamos si el día fue mayormente bueno o malo
+    if (clientesAtendidos > clientesPerdidos)
+    {
+        reputacion += 2; // Sube la reputación si atendiste a la mayoría
+    }
+    else if (clientesPerdidos > clientesAtendidos)
+    {
+        reputacion -= 3; // Baja más rápido si perdiste a la mayoría
+    }
+    // Nota: Si son exactamente iguales, la reputación se mantiene igual.
 
-    Console.WriteLine("[ActualizarReputacion] pendiente de implementar.");
+    // Nos aseguramos de mantener la reputación entre 0 y 100
+    if (reputacion > 100)
+    {
+        reputacion = 100;
+    }
+    else if (reputacion < 0)
+    {
+        reputacion = 0;
+    }
 }
 
 void GenerarEvento()
 {
-    // TODO: Si rng.Next(0, 100) < 30 (30% de probabilidad):
-    //   - Si rng.Next(0,2) == 0: evento positivo
-    //     → elegir de eventosPositivos, aplicar efecto positivo
-    //   - Si no: evento negativo
-    //     → elegir de eventosNegativos, aplicar efecto negativo
-    //   - Llamar MostrarEvento() con la descripción
+    // rng.Next(0, 100) genera un número del 0 al 99. 
+    // Si es menor a 30, significa que hay un 30% de probabilidad de que ocurra algo.
+    if (rng.Next(0, 100) < 30)
+    {
+        // 50% de probabilidad de que sea positivo (0) o negativo (1)
+        if (rng.Next(0, 2) == 0)
+        {
+            // --- EVENTO POSITIVO ---
+            int indice = rng.Next(0, eventosPositivos.Length);
+            string descripcion = eventosPositivos[indice];
 
-    Console.WriteLine("[GenerarEvento] pendiente de implementar.");
+            // Aplicar el efecto positivo dependiendo de cuál evento salió
+            switch (indice)
+            {
+                case 0: reputacion += 5; break;      // Turistas (sube reputación)
+                case 1: dinero += 100.0; break;      // Quincena (más dinero de golpe)
+                case 2: reputacion += 15; break;     // Periodista (mucha reputación)
+                case 3: ingredientes += 30; break;   // Proveedor (ingredientes gratis)
+                case 4: dinero += 50.0; break;       // Propina (algo de dinero extra)
+            }
+
+            // Nos aseguramos de que la reputación no pase de 100 por un evento
+            if (reputacion > 100) reputacion = 100;
+
+            MostrarEvento(descripcion);
+        }
+        else
+        {
+            // --- EVENTO NEGATIVO ---
+            int indice = rng.Next(0, eventosNegativos.Length);
+            string descripcion = eventosNegativos[indice];
+
+            // Aplicar el efecto negativo dependiendo de cuál evento salió
+            switch (indice)
+            {
+                case 0: reputacion -= 10; break;     // Inspección (baja reputación)
+                case 1: ingredientes -= 20; break;   // Sin luz (se arruina la comida)
+                case 2: reputacion -= 5; break;      // Empleado tarde (clientes molestos)
+                case 3: reputacion -= 5; break;      // Lluvia (baja un poco la reputación)
+                case 4: dinero -= 50.0; break;       // Subió todo (pierdes dinero)
+            }
+
+            // Nos aseguramos de que las estadísticas no bajen de cero
+            if (reputacion < 0) reputacion = 0;
+            if (ingredientes < 0) ingredientes = 0;
+
+            MostrarEvento(descripcion);
+        }
+    }
 }
 
 bool VerificarDerrota()
 {
-    // TODO: Si dinero <= 0, mostrar mensaje y retornar true
-    //       Si no, retornar false
+    // Verificamos si el jugador se quedó sin fondos
+    if (dinero <= 0)
+    {
+        Console.WriteLine("\n╔══════════════════════════════════════╗");
+        Console.WriteLine("║            ¡BANCARROTA!              ║");
+        Console.WriteLine("║  Te quedaste sin plata para operar.  ║");
+        Console.WriteLine("╚══════════════════════════════════════╝");
+        Console.WriteLine("Presioná ENTER para continuar...");
+        Console.ReadLine();
 
-    return false;
+        return true; // Retorna true para indicarle al bucle principal que el juego terminó
+    }
+
+    return false; // Retorna false porque todavía hay dinero para seguir jugando
 }
 
 void ComprarIngredientes()
 {
-    // TODO: Mostrar precio por unidad (ej: C$5 cada una)
-    //       Preguntar cuántas unidades quiere comprar
-    //       Verificar que tenga dinero: dinero >= cantidad * 5
-    //       Si tiene: dinero -= cantidad * 5, ingredientes += cantidad
-    //       Si no: mostrar mensaje de error
+    Console.Clear();
+    Console.WriteLine("--- TIENDA DE INGREDIENTES ---");
+    Console.WriteLine($"Dinero actual: C${dinero:F2}");
+    Console.WriteLine($"Ingredientes actuales: {ingredientes} unidades");
+    Console.WriteLine("Precio por unidad: C$5.00");
+    Console.WriteLine("----------------------------------------");
 
-    Console.WriteLine("[ComprarIngredientes] pendiente de implementar.");
+    // Preguntar cuántas unidades quiere comprar
+    Console.Write("¿Cuántas unidades de ingredientes querés comprar?: ");
+    string entrada = Console.ReadLine();
+
+    if (int.TryParse(entrada, out int cantidad) && cantidad > 0)
+    {
+        // Verificar que tenga dinero: dinero >= cantidad * 5
+        double costoTotal = cantidad * 5.0;
+        Console.WriteLine($"Costo total por {cantidad} unidades: C${costoTotal:F2}");
+
+        if (dinero >= costoTotal)
+        {
+            // Si tiene: dinero -= cantidad * 5, ingredientes += cantidad
+            dinero -= costoTotal;
+            ingredientes += cantidad;
+            Console.WriteLine("\n¡Compra exitosa! Los ingredientes ya están en bodega.");
+        }
+        else
+        {
+            // Si no: mostrar mensaje de error
+            Console.WriteLine("\n¡Error! No tenés suficiente dinero para esta compra.");
+        }
+    }
+    else
+    {
+        Console.WriteLine("\n¡Cantidad inválida! Debés ingresar un número entero mayor a cero.");
+    }
+
+    Console.WriteLine("\nPresioná ENTER para regresar al menú...");
     Console.ReadLine();
 }
 
 void ContratarEmpleado()
 {
-    // TODO: Costo de contratación: C$100
-    //       Verificar que dinero >= 100
-    //       Si tiene: dinero -= 100, empleados++
-    //       Si no: mostrar mensaje de error
+    double costoContratacion = 100.0;
 
-    Console.WriteLine("[ContratarEmpleado] pendiente de implementar.");
+    Console.WriteLine("\n--- CONTRATAR EMPLEADO ---");
+
+    // Verificamos si hay suficiente dinero en la caja
+    if (dinero >= costoContratacion)
+    {
+        dinero -= costoContratacion; // Restamos el costo
+        empleados++;                 // Sumamos un trabajador al equipo
+
+        Console.WriteLine("¡Excelente! Contrataste a un nuevo empleado por C$100.");
+        Console.WriteLine($"Ahora tenés {empleados} empleados trabajando en la fritanga.");
+    }
+    else
+    {
+        // Mensaje de error si no ajusta la plata
+        Console.WriteLine("¡Ideay! No tenés suficiente plata.");
+        Console.WriteLine($"Contratar cuesta C$100 y solo tenés C${dinero:F2} en caja.");
+    }
+
+    Console.WriteLine("\nPresioná ENTER para regresar a la tienda...");
     Console.ReadLine();
 }
 
 void AgregarMesa()
 {
-    // TODO: Costo de mesa: C$150
-    //       Verificar que dinero >= 150
-    //       Si tiene: dinero -= 150, mesas++
-    //       Si no: mostrar mensaje de error
+    double costoMesa = 150.0;
 
-    Console.WriteLine("[AgregarMesa] pendiente de implementar.");
+    Console.WriteLine("\n--- AGREGAR MESA ---");
+
+    // Verificamos si hay suficiente dinero para comprar la mesa
+    if (dinero >= costoMesa)
+    {
+        dinero -= costoMesa; // Restamos el costo de la caja
+        mesas++;             // Sumamos una mesa al local
+
+        Console.WriteLine("¡Bárbaro! Compraste una mesa nueva por C$150.");
+        Console.WriteLine($"Ahora tenés {mesas} mesas en la fritanga.");
+    }
+    else
+    {
+        // Mensaje en caso de no tener fondos suficientes
+        Console.WriteLine("¡Falta billete para la mesa!");
+        Console.WriteLine($"Cada mesa cuesta C$150 y solo tenés C${dinero:F2}.");
+    }
+
+    Console.WriteLine("\nPresioná ENTER para regresar a la tienda...");
     Console.ReadLine();
 }
 
